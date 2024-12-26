@@ -1,17 +1,27 @@
 import Header from "../components/header";
 import Footer from "../components/footer";
 import { Link } from "react-router-dom";
-import useLogin from "../hooks/useLogin";
+import { stringify } from "postcss";
 
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   
-  const { loading, login } = useLogin();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await login(email, password);
+    try {
+      const res = await fetch('/auth/login', {
+        method : 'POST',
+        headers : 'application/json',
+        body : JSON.stringify({ email, password })
+      });
+      if(res.error){
+        console.log(error);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   }
   return (
     <>
