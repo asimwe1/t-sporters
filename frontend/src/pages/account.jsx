@@ -1,6 +1,18 @@
+import React from "react";
 import { number } from "prop-types";
 import Footer from "../components/footer";
 import Header from "../components/header";
+import { products } from "../data/products";
+import NewProductForm from "../components/newProductForm";
+
+products.forEach((product) => {
+  product.priceBeforeDiscount = product.priceBeforeDiscount || null;
+  product.rating = product.rating || {
+    stars: Math.floor(Math.random() * 5) + 1,
+    count: Math.floor(Math.random() * 200) + 1,
+  };
+  product.image = product.image || "/images/default-product.png";
+});
 
 const Top = () => {
   return (
@@ -24,15 +36,16 @@ const AccountDetailsCategories = ({ header, categoryone, categorytwo, categoryth
       <div className="ml-6 mt-2">
         {categoryone && <p className="text-base text-gray-500">{categoryone}</p>}
         {categorytwo && <p className="text-base text-gray-500">{categorytwo}</p>}
-        {categorythree && <p className="text-base text-gray-500">{categorythree}</p>}
+        {categorythree}
       </div>
     </div>
   );
 };
 
 const Account = () => {
-  const productNumber = 10;
-  const number = "+250788888888"
+  const productNumber = products.length; // Total number of products
+  const number = "+250788888888";
+  const [showForm, setShowForm] = React.useState(false);
 
   return (
     <>
@@ -50,6 +63,14 @@ const Account = () => {
             <AccountDetailsCategories
               header="Products"
               categoryone={`Total number: ${productNumber}`}
+              categorythree={
+                <button
+                  className="text-blue-500"
+                  onClick={() => setShowForm(true)}
+                >
+                  Add Product
+                </button>
+              }
             />
           </div>
 
@@ -142,6 +163,7 @@ const Account = () => {
         </div>
       </div>
       <Footer />
+      {showForm && <NewProductForm onClose={() => setShowForm(false)} />}
     </>
   );
 };
