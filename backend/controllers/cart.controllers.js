@@ -30,7 +30,7 @@ export const addToCart = async (req, res) => {
 
     return res.status(200).json({ message: "Product added to cart successfully.", cart });
   } catch (error) {
-    console.error("Error adding product to cart:", error.message);
+    console.error(error.message);
     return res.status(500).json({ message: "Server error." });
   }
 };
@@ -47,7 +47,7 @@ export const getCart = async (req, res) => {
 
     return res.status(200).json(cart);
   } catch (error) {
-    console.error("Error fetching cart:", error.message);
+    console.error(error);
     return res.status(500).json({ message: "Server error." });
   }
 };
@@ -77,7 +77,7 @@ export const updateCart = async (req, res) => {
 
     return res.status(200).json({ message: "Cart updated successfully.", cart });
   } catch (error) {
-    console.error("Error updating cart:", error.message);
+    console.error(error);
     return res.status(500).json({ message: "Server error." });
   }
 };

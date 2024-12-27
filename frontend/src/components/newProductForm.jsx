@@ -60,7 +60,6 @@ const NewProductForm = ({ onClose }) => {
 
       if (response.ok) {
         const result = await response.json();
-        alert("Product added successfully!");
         onClose();
       } else {
         const errorResponse = await response.json();
