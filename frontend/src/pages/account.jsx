@@ -1,18 +1,8 @@
-import React from "react";
-import { number } from "prop-types";
-import Footer from "../components/footer";
-import Header from "../components/header";
-import { products } from "../data/products";
-import NewProductForm from "../components/newProductForm";
-
-products.forEach((product) => {
-  product.priceBeforeDiscount = product.priceBeforeDiscount || null;
-  product.rating = product.rating || {
-    stars: Math.floor(Math.random() * 5) + 1,
-    count: Math.floor(Math.random() * 200) + 1,
-  };
-  product.image = product.image || "/images/default-product.png";
-});
+import React, { useState, useEffect, useContext } from "react";
+import Footer from "../components/footer.jsx";
+import Header from "../components/header.jsx";
+import NewProductForm from "../components/newProductForm.jsx";
+import AuthContext from "../context/AuthContext.jsx";
 
 const Top = () => {
   return (
@@ -43,26 +33,71 @@ const AccountDetailsCategories = ({ header, categoryone, categorytwo, categoryth
 };
 
 const Account = () => {
-  const productNumber = products.length; // Total number of products
-  const number = "+250788888888";
-  const [showForm, setShowForm] = React.useState(false);
+  const { user } = useContext(AuthContext); // Get user data from context
+  const [showForm, setShowForm] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [userData, setUserData] = useState({
+    names : "",
+    email: "",
+    address: "",
+    whatsappNumber: "",
+  });
+
+  useEffect(() => {
+    if (!user?.authToken) {
+      setError("User not authenticated");
+      setLoading(false);
+      return;
+    }
+
+    const fetchUserData = async () => {
+      try {
+        const response = await fetch("/api/user/profile", {
+          headers: {
+            Authorization: `Bearer ${user.authToken}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch user data");
+        }
+
+        const data = await response.json();
+        setUserData({
+          names: data.names || "",
+          email: data.email || "",
+          address: data.address || "",
+          whatsappNumber: data.whatsappNumber || "",
+        });
+        setLoading(false);
+      } catch (error) {
+        setError(error.message);
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [user]);
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   return (
     <>
       <Header profiledivclicked={true} />
       <div className="mt-8">
         <Top />
-
         <div className="grid md:grid-cols-4 grid-cols-1">
           <div className="hidden md:block">
             <AccountDetailsCategories
               header="Manage My Account"
               categoryone="My Profile"
-              categorytwo={`Whatsapp Number: ${number}`}
+              categorytwo={`Whatsapp Number: ${userData.whatsappNumber}`}
             />
             <AccountDetailsCategories
               header="Products"
-              categoryone={`Total number: ${productNumber}`}
+              categoryone={`Total number: 10`}
               categorythree={
                 <button
                   className="text-blue-500"
@@ -87,17 +122,8 @@ const Account = () => {
                     type="text"
                     id="firstname"
                     name="firstname"
-                    placeholder="Sewase"
-                  />
-                </div>
-                <div className="flex flex-col md:mr-6">
-                  <label htmlFor="lastname">Last Name</label>
-                  <input
-                    className="border-2 bg-gray-100 p-2 rounded-md outline-none placeholder:text-gray-500 mt-1 mb-2"
-                    type="text"
-                    id="lastname"
-                    name="lastname"
-                    placeholder="Angel"
+                    value={userData.names}
+                    onChange={(e) => setUserData({ ...userData, firstName: e.target.value })}
                   />
                 </div>
                 <div className="flex flex-col md:mr-6">
@@ -107,7 +133,8 @@ const Account = () => {
                     type="email"
                     id="email"
                     name="email"
-                    placeholder="email@example.com"
+                    value={userData.email}
+                    onChange={(e) => setUserData({ ...userData, email: e.target.value })}
                   />
                 </div>
                 <div className="flex flex-col md:mr-6">
@@ -117,33 +144,11 @@ const Account = () => {
                     type="text"
                     id="address"
                     name="address"
-                    placeholder="User address"
+                    value={userData.address}
+                    onChange={(e) => setUserData({ ...userData, address: e.target.value })}
                   />
                 </div>
               </div>
-
-              <div className="flex flex-col md:mr-6">
-                <h4>Password Changes</h4>
-                <input
-                  className="border-2 my-1.5 rounded-md p-2 bg-gray-100 outline-none"
-                  type="password"
-                  name="currentpassword"
-                  placeholder="Current Password"
-                />
-                <input
-                  className="border-2 my-1.5 rounded-md p-2 bg-gray-100 outline-none"
-                  type="password"
-                  name="newpassword"
-                  placeholder="New Password"
-                />
-                <input
-                  className="border-2 my-1.5 rounded-md p-2 bg-gray-100 outline-none"
-                  type="password"
-                  name="confirmedpassword"
-                  placeholder="Confirm New Password"
-                />
-              </div>
-
               <div className="md:mr-6 flex justify-end mt-4">
                 <button
                   type="button"

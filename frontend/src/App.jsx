@@ -1,65 +1,70 @@
-import HomePage from "./pages/homepage"
-import Login from "./pages/logIn"
-import { createBrowserRouter,RouterProvider } from "react-router-dom"
-import SignUp from "./pages/singUp"
-import Aboutus from "./pages/aboutUs"
-import Contact from "./pages/contact"
-import Account from "./pages/account"
-import Cart from "./pages/cart"
-import Checkout from "./pages/checkout"
-import WishList from "./pages/wishlist"
-import ProductDisplay from "./components/productDisplay"
+import HomePage from "./pages/homepage.jsx";
+import Login from "./pages/logIn.jsx";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import SignUp from "./pages/singUp.jsx";
+import AboutUs from "./pages/aboutUs.jsx";
+import Contact from "./pages/contact.jsx";
+import Account from "./pages/account.jsx";
+import Cart from "./pages/cart.jsx";
+import Checkout from "./pages/checkout.jsx";
+import WishList from "./pages/wishlist.jsx";
+import ProductDisplay from "./components/productDisplay.jsx";
+import { AuthProvider } from "./context/AuthContext.jsx";
+import ProtectedRoute from "./utils/protectedRoutes.jsx";
 
 const router = createBrowserRouter([
   {
-   path:"/",
-   element:<HomePage />
-
+    path: "/",
+    element: <HomePage />,
   },
   {
-    path:"/login",
-    element:<Login />
+    path: "/login",
+    element: <Login />,
   },
   {
-    path:"/signup",
-    element:<SignUp />
+    path: "/signup",
+    element: <SignUp />,
   },
   {
-    path:"/aboutUs",
-    element:<Aboutus />
+    path: "/about-us",
+    element: <AboutUs />,
   },
   {
-     path:"/contact",
-     element:<Contact />
+    path: "/contact",
+    element: <Contact />,
   },
   {
-    path:"/account",
-    element:<Account />
+    path: "/account",
+    element: (
+      <ProtectedRoute>
+        <Account/>
+      </ProtectedRoute>
+    ),
   },
   {
-    path:"/cart",
-    element: <Cart />
+    path: "/cart",
+    element: <Cart />,
   },
   {
-    path:"/checkout",
-    element:<Checkout />
+    path: "/checkout",
+    element: <Checkout />,
   },
   {
-    path:"/wishlist",
-    element:<WishList />
+    path: "/wishlist",
+    element: <WishList />,
   },
   {
-    path:"/product/:id",
-    element:<ProductDisplay />
-  }
-])
+    path: "/product/:id",
+    element: <ProductDisplay />,
+  },
+]);
 
 function App() {
   return (
-    <>
-        <RouterProvider router={router} />
-    </>
-  )
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
+  );
 }
 
-export default App
+export default App;

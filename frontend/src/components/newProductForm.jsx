@@ -34,15 +34,22 @@ const NewProductForm = ({ onClose }) => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    // Client-side validation for required fields
+    if (!formData.productName || !formData.price || !formData.description || !formData.ratingStars || !formData.ratingCount) {
+      alert('Please fill in all required fields.');
+      return;
+    }
+
     const data = new FormData();
-    data.append("productName", formData.productName);
+    data.append("name", formData.productName);
     data.append("price", formData.price);
     data.append("priceBeforeDiscount", formData.priceBeforeDiscount || "");
     data.append("description", formData.description);
     data.append("ratingStars", formData.ratingStars);
     data.append("ratingCount", formData.ratingCount);
     if (imageFile) {
-      data.append("image", imageFile);
+      data.append("file", imageFile);
     }
 
     try {
@@ -56,12 +63,13 @@ const NewProductForm = ({ onClose }) => {
         alert("Product added successfully!");
         onClose();
       } else {
-        alert("Failed to add product. Please try again.");
-        console.log(response)
+        const errorResponse = await response.json();
+        console.error("Error Response:", errorResponse);
+        alert(`Failed to add product: ${errorResponse.message || "Please try again."}`);
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("An error occurred. Please try again.");
+      alert("An error occurred while adding the product. Please try again.");
     }
   };
 
