@@ -9,7 +9,6 @@ import Cart from "./pages/cart"
 import Checkout from "./pages/checkout"
 import WishList from "./pages/wishlist"
 import ProductDisplay from "./components/productDisplay"
-import { AuthContext } from "./context/AuthContext"
 
 const router = createBrowserRouter([
   {

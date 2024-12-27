@@ -28,8 +28,6 @@ function removeformwishlist(data, clicked) {
   clicked((prev) => !prev);
 }
 
-//THE ICON DIV FOR ADDING TO THE CART AND TO THE WISHLIST
-
 const ProductIconDiv1 = (props) => {
   let display = props.recommended ? "hidden" : "flex";
   let data = props.data;
