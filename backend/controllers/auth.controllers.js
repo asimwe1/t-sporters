@@ -3,14 +3,14 @@ import bcrypt from 'bcryptjs';
 import { generateTokenAndSetCookie } from "../utils/generate.token.js";
 
 export const register = async (req, res) => {
-  const { names, email, password } = req.body;
+  const { names, email, whatsappNumber, password } = req.body;
   try {
     const user = await User.findOne({ email });
     if(user){
       return res.status(403).json({ message : "user already exists" })
     };
     const hashedPassword = await bcrypt.hash(password, 12);
-    const newUser = new User({ names, email, password : hashedPassword });
+    const newUser = new User({ names, email, whatsappNumber, password : hashedPassword });
     await newUser.save();
     return res.status(200).json({ message : "user created successfully" });
   } catch (error) {

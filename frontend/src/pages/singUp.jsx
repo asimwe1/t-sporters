@@ -7,6 +7,7 @@ function SignUp() {
   const [names, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [whatsappNumber, setWhatsappNumber] = useState('');
   const [error, setError] = useState(null); 
   const navigate = useNavigate();
 
@@ -70,6 +71,14 @@ function SignUp() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
+            {/* <input
+              name="whatsappNumber"
+              type="text"
+              placeholder="Telephone Number"
+              className="border-b-2 w-2/4 mb-6 text-black outline-none placeholder:text-gray-400 placeholder:text-sm"
+              value={whatsappNumber}
+              onChange={(e) => setWhatsappNumber(e.target.value)}
+            /> */}
             <input
               name="password"
               type="password"

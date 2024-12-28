@@ -8,11 +8,9 @@ const cartSchema = mongoose.Schema({
 
 const productSchema = mongoose.Schema({
   name : { type : String, required : true },
-  
-  discount : { type : Number, default : 0.0 },
+  priceBeforeDiscount : { type : Number, default : 0.0 },
   rating : { type : Number, default : 0.0 },
   ratingCount : { type : Number, default : 0 },
-
   description : { type : String, required : true },
   image : { type : Buffer, required : true },
   imageContentType : { type : String, required : true },

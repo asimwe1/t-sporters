@@ -5,6 +5,57 @@ import NewProductForm from "../components/newProductForm.jsx";
 import AuthContext from "../context/AuthContext.jsx";
 
 const Top = () => {
+  const { user } = useContext(AuthContext); // Get user data from context
+  const [showForm, setShowForm] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [userData, setUserData] = useState({
+    names : "",
+    email: "",
+    address: "",
+    whatsappNumber: "",
+  });
+
+  useEffect(() => {
+    if (!user?.authToken) {
+      setError("User not authenticated");
+      setLoading(false);
+      return;
+    }
+
+    const fetchUserData = async () => {
+      try {
+        const response = await fetch("/api/user/profile", {
+          headers: {
+            Authorization: `Bearer ${user.authToken}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch user data");
+        }
+
+        const data = await response.json();
+        setUserData({
+          names: data.names || "",
+          email: data.email || "",
+          address: data.address || "",
+          whatsappNumber: data.whatsappNumber || "",
+        });
+        setLoading(false);
+      } catch (error) {
+        setError(error.message);
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [user]);
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
+
+
   return (
     <div className="flex justify-between mb-8 px-4 lg:px-0">
       <div className="lg:ml-20 mt-10">
@@ -12,7 +63,7 @@ const Top = () => {
       </div>
       <div className="lg:mr-20 mt-10">
         <p>
-          Welcome! <span className="text-red-600">Beni Sporters</span>
+          Welcome! <span className="text-red-600">{userData.names}</span>
         </p>
       </div>
     </div>
@@ -148,6 +199,18 @@ const Account = () => {
                     onChange={(e) => setUserData({ ...userData, address: e.target.value })}
                   />
                 </div>
+                <div className="flex flex-col md:mr-6">
+                  <label htmlFor="address">Whatsapp Number</label>
+                  <input
+                    className="border-2 bg-gray-100 p-2 rounded-md outline-none placeholder:text-gray-500 mt-1"
+                    type="text"
+                    id="address"
+                    name="address"
+                    value={userData.whatsappNumber}
+                    onChange={(e) => setUserData({ ...userData, address: e.target.value })}
+                  />
+                </div>
+
               </div>
               <div className="md:mr-6 flex justify-end mt-4">
                 <button
