@@ -1,35 +1,97 @@
-import React from "react";
-import Product, { addToCart, addtowhishlist } from "./product";
+import React, { useEffect, useState } from "react";
 import Header from "./header";
 import Footer from "./footer";
-import { cart } from "../data/cart";
-import { wishlistProducts } from "../data/wishlist";
-import { products } from "../data/products";
 import { useParams } from "react-router-dom";
 
 const ProductDisplay = () => {
-  const [quantity, setQuantity] = React.useState(1);
-  let { id } = useParams();
-  //  let product = products.find((product) => (product.id = id));
-  //  console.log(product)
+  const [product, setProduct] = useState(null);
+  const [quantity, setQuantity] = useState(1);
+  const { id } = useParams();
+  const headerref = React.useRef(null);
 
-  let product;
-  for (let index = 0; index < products.length; index++) {
-    const element = products[index];
-    if (element.id === id) {
-      product = element;
-    }
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const response = await fetch(`/api/products/${id}`, {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        const data = await response.json();
+        if (response.ok) {
+          setProduct(data);
+        } else {
+          console.error("Failed to fetch product:", data.message);
+        }
+      } catch (error) {
+        console.error("Error fetching product data:", error);
+      }
+    };
+
+    fetchProduct();
+  }, [id]);
+
+  // Update header cart and wishlist counts
+  function updateheader(value) {
+    headerref.current.setCartvalue(value);
   }
 
-  const headerref = React.useRef(null)
+  function updateheaderwishlist(value) {
+    headerref.current.setwishlistvalue(value);
+  }
 
-  function updateheader(value){
-    headerref.current.setCartvalue(value)
-   }
-  
-   function updateheaderwishlist(value){
-    headerref.current.setwishlistvalue(value)
-   }
+  if (!product) {
+    return <p>Loading product details...</p>; // Loading state while product is being fetched
+  }
+
+  const handleAddToCart = async () => {
+    try {
+      const response = await fetch("/api/cart/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          productId: id,
+          quantity,
+        }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        updateheader(data.cartLength); // Update the cart count in the header
+        console.log("Product added to cart:", data);
+      } else {
+        console.error("Failed to add product to cart:", data.message);
+      }
+    } catch (error) {
+      console.error("Error adding product to cart:", error);
+    }
+  };
+
+  const handleAddToWishlist = async () => {
+    try {
+      const response = await fetch("/api/wishlist/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ productId: id }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        updateheaderwishlist(data.wishlistLength); // Update the wishlist count in the header
+        console.log("Product added to wishlist:", data);
+      } else {
+        console.error("Failed to add product to wishlist:", data.message);
+      }
+    } catch (error) {
+      console.error("Error adding product to wishlist:", error);
+    }
+  };
+
   return (
     <>
       <Header ref={headerref} />
@@ -38,7 +100,7 @@ const ProductDisplay = () => {
           <img src={product.image} alt="product image" className="w-72" />
         </div>
 
-        {/* product description div */}
+        {/* Product Description */}
         <div>
           <h2 className="text-2xl">{product.name}</h2>
           <div>
@@ -55,79 +117,68 @@ const ProductDisplay = () => {
             </div>
             <span>${(product.priceCents / 100).toFixed(2)}</span>
           </div>
-          {/* description div */}
+
+          {/* Product Description */}
           <div className=" ">
-            <p>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Ratione
-              illum unde ex porro asperiores minus fugiat ipsa fuga, esse quasi
-              explicabo dicta possimus incidunt. Quisquam recusandae magnam
-              omnis cumque a.
-            </p>
+            <p>{product.description}</p>
             <hr className="mt-4" />
           </div>
-          {/* colors */}
+
+          {/* Colors */}
           <div>
-            <span>colors</span>
-            <button className="w-4 h-4 rounded-full mx-1 my-3 bg-red-500 "></button>
-            <button className="w-4 h-4 rounded-full mx-1 my-3 bg-green-500 "></button>
-          </div>
-          {/* sizes */}
-          <div>
-            <span className="mr-2">Size :</span>
-            <button className=" rounded border-2 mx-1 py-1 px-2 text-xs border-gray-400 hover:bg-red-500 hover:text-white hover:border-none">
-              XS
-            </button>
-            <button className=" rounded border-2 mx-1 py-1 px-2 text-xs border-gray-400 hover:bg-red-500 hover:text-white hover:border-none">
-              X
-            </button>
-            <button className=" rounded border-2 mx-1 py-1 px-2 text-xs border-gray-400 hover:bg-red-500 hover:text-white hover:border-none">
-              M
-            </button>
-            <button className=" rounded border-2 mx-1 py-1 px-2 text-xs border-gray-400 hover:bg-red-500 hover:text-white hover:border-none">
-              L
-            </button>
-            <button className=" rounded border-2 mx-1 py-1 px-2 text-xs border-gray-400 hover:bg-red-500 hover:text-white hover:border-none">
-              XL
-            </button>
+            <span>Colors:</span>
+            {product.colors.map((color, index) => (
+              <button
+                key={index}
+                className="w-4 h-4 rounded-full mx-1 my-3"
+                style={{ backgroundColor: color }}
+              ></button>
+            ))}
           </div>
 
+          {/* Sizes */}
+          <div>
+            <span className="mr-2">Size:</span>
+            {product.sizes.map((size, index) => (
+              <button
+                key={index}
+                className="rounded border-2 mx-1 py-1 px-2 text-xs border-gray-400 hover:bg-red-500 hover:text-white hover:border-none"
+              >
+                {size}
+              </button>
+            ))}
+          </div>
+
+          {/* Quantity and Cart / Wishlist Buttons */}
           <div className="mt-3 flex flex-col lg:flex-row gap-4 ">
             <div className="flex mt-1">
               <button
                 className="border-2 border-gray-150 rounded py-3 text-base h-6 w-20 flex items-center justify-center hover:bg-red-500 hover:border-red-500 hover:text-white"
-                onClick={() => {
-                  setQuantity((prev) => prev + 1);
-                }}
+                onClick={() => setQuantity((prev) => prev + 1)}
               >
                 Add
               </button>
-              <span className=" text-3xl flex items-center justify-center mx-4 -mt-1">
-                {quantity}
-              </span>
+              <span className="text-3xl flex items-center justify-center mx-4 -mt-1">{quantity}</span>
               <button
                 className="border-2 border-gray-150 rounded py-3 text-base h-6 w-20 flex items-center justify-center hover:bg-red-500 hover:border-red-500 hover:text-white"
-                onClick={() => {
-                  setQuantity((prev) => (prev !== 0 ? prev - 1 : 0));
-                }}
+                onClick={() => setQuantity((prev) => (prev !== 0 ? prev - 1 : 0))}
               >
-                remove
+                Remove
               </button>
             </div>
+
+            {/* Add to Cart */}
             <button
               className="bg-red-500 rounded py-1 px-8 text-white"
-              onClick={() => {
-                addToCart(id, quantity);
-                updateheader(cart.length)
-              }}
+              onClick={handleAddToCart}
             >
-              buy now
+              Buy Now
             </button>
+
+            {/* Add to Wishlist */}
             <button
               className="rounded border-2 mx-1 py-1 px-2 text-xs border-gray-400 self-start"
-              onClick={() => {
-                addtowhishlist(id);
-                updateheaderwishlist(wishlistProducts.length)
-              }}
+              onClick={handleAddToWishlist}
             >
               <img
                 src={"/images/heart.svg"}
@@ -137,9 +188,9 @@ const ProductDisplay = () => {
             </button>
           </div>
 
-          {/* delivery options */}
+          {/* Delivery Options */}
           <div className="mt-4 w-7/12 border-2 rounded p-2">
-            <div className="flex  p-2">
+            <div className="flex p-2">
               <img
                 src="/images/shipping-fast.svg"
                 alt="delivery icon"
@@ -148,12 +199,12 @@ const ProductDisplay = () => {
               <div className="ml-3">
                 <h3 className="text-sm">Free delivery</h3>
                 <p className="text-xs underline font-bold">
-                  Enter your postal code for deliver availability
+                  Enter your postal code for delivery availability
                 </p>
               </div>
             </div>
             <hr />
-            <div className="flex  p-2">
+            <div className="flex p-2">
               <img
                 src="/images/rotate-right.svg"
                 alt="return delivery"
@@ -162,27 +213,14 @@ const ProductDisplay = () => {
               <div className="ml-3">
                 <h3 className="text-sm">Return Delivery</h3>
                 <p className="text-xs underline font-bold">
-                  Free 30 days delivery return. Details
+                  Free 30-day return policy. Details
                 </p>
               </div>
             </div>
           </div>
         </div>
       </div>
-      <div>
-        <div className="ml-8 md:ml-14">
-          <div className="flex justify-between items-center mb-6 mt-10">
-            <div className="flex gap-2 items-center">
-              <div className="w-4 h-8 bg-red-700  rounded"></div>
-              <p className="font-semibold">related items</p>
-            </div>
-          </div>
 
-          <div className="grid grid-cols-2 md:flex">
-            <Product {...products[9]} recommended={true} updateheader={updateheader}/>
-          </div>
-        </div>
-      </div>
       <Footer />
     </>
   );

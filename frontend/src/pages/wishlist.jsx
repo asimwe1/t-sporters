@@ -1,100 +1,65 @@
-import React from "react";
-import Footer from "../components/footer";
-import Header from "../components/header";
-import Product from "../components/product";
-import { products } from "../data/products";
-import { wishlistProducts } from "../data/wishlist";
-import { cart } from "../data/cart";
+import React, { useState, useEffect } from "react";
 
+const Wishlist = () => {
+  const [wishlist, setWishlist] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-function addalltocart(update){
-  let quantity=1
-for (let i = 0; i < wishlistProducts.length; i++) {
-  const wishlistelement = wishlistProducts[i];
-  let foundproduct;
-  for (let index = 0; index < cart.length; index++) {
-    const cartelement = cart[index];
-      if(cartelement.id === wishlistelement){
-      foundproduct=true
+  useEffect(() => {
+    const fetchWishlist = async () => {
+      try {
+        const response = await fetch("/api/wishlist", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Failed to fetch wishlist");
+        }
+
+        const data = await response.json();
+        setWishlist(data);
+      } catch (err) {
+        console.error("Error fetching wishlist:", err.message);
+        setError(err.message || "Failed to load wishlist");
+      } finally {
+        setLoading(false);
       }
-    }
-   if(!foundproduct){cart.push({id:wishlistelement,quantity:quantity})}
+    };
+
+    fetchWishlist();
+  }, []);
+
+  if (loading) {
+    return <div>Loading wishlist...</div>;
   }
- update(cart.length)
-}
 
-const  WishlistProducts =({updated,updateheader,updateheaderwishlist})=>{
-  const foundwishlistProducts = []
-
-  for (let index = 0; index < wishlistProducts.length; index++) {
-    const element = wishlistProducts[index];
-    for (let index = 0; index < products.length; index++) {
-      const product = products[index];
-      if(product.id === element){
-      foundwishlistProducts.push(product)
-      }
-    }
-    
+  if (error) {
+    return <div>Error: {error}</div>;
   }
-  const wishlist = foundwishlistProducts.map((product)=> <Product {...product} wishlist={true} key={product.image} 
-  clicked={updated} updateheader={updateheader} updateheaderwishlist={updateheaderwishlist}
-  />)
-
-  return <>
-  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 md:gap-4 ">
-  {wishlist}
-  </div>
-  {wishlist.length === 0 ? <p className="text-2xl font-semibold ml-[20%]"> Oops! There are no products in the wishlist</p>:""}
-  </>
-}
-
-let productTwo = products[5]
-
-const WishList = () => {
-  const [updated,setUpdated] = React.useState(false)
-  
-  const headerref = React.useRef(null)
-
-  function updateheader(value){
-    headerref.current.setCartvalue(value)
-   }
-  
-   function updateheaderwishlist(value){
-    headerref.current.setwishlistvalue(value)
-   }
 
   return (
-    <>
-      <Header ref={headerref}/>
-      <div className=" px-4 lg:px-0 lg:mx-20">
-        <div>
-          <div className="flex justify-between items-center mb-6 mt-10">
-            <p className="font-semibold">Wishlist ({wishlistProducts.length})</p>
-            <button className="border-2 px-4  py-1 rounded hover:bg-gray-200" onClick={() =>{addalltocart(updateheader)}}>Move all to bag</button>
-          </div>
-          <div>
-          <WishlistProducts updated={setUpdated} updateheader={updateheader} updateheaderwishlist={updateheaderwishlist}/>
-          </div>
-        </div>
-        <div>
-          <div>
-            <div className="flex justify-between items-center mb-6 mt-10">
-            <div className="flex gap-2 items-center">
-            <div className="w-4 h-8 bg-red-700  rounded"></div>
-            <p className="font-semibold">Just for you</p>
-            </div>
-            <button className="border-2 px-4  py-1 rounded">See all</button>
-            </div>
-            
-            <div className="grid grid-cols-2 md:flex  ">
-              <Product {...productTwo} recommended={true} updateheader={updateheader}/>
-            </div>
-          </div>
-        </div>
-      </div>
-      <Footer />
-    </>
+    <div>
+      <h1>Your Wishlist</h1>
+      {wishlist.length > 0 ? (
+        <ul>
+          {wishlist.map((item) => (
+            <li key={item.id}>
+              <h3>{item.name}</h3>
+              <p>{item.description}</p>
+              <p>Price: ${item.price}</p>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p>Your wishlist is empty!</p>
+      )}
+    </div>
   );
 };
 
-export default WishList;
+export default Wishlist;
